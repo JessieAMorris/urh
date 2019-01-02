@@ -42,7 +42,8 @@ DEVICES = {
                 #include<stdio.h>
                 int main(void) {
                 float version=0.0; mir_sdr_ApiVersion(&version); printf("%f", version); return 0;}
-                """}
+                """},
+    "xtrx": {"lib": "xtrx", "test_function": "xtrx_discovery"}
 }
 
 
