@@ -27,8 +27,8 @@ cpdef list get_device_list():
     """
     Obtain a list of XTRX devices attached to the system
     """
-    cxtrx.xtrx_device_info_t devs[32]
-    int res = xtrx_discovery(devs, 32)
+    cdef cxtrx.xtrx_device_info_t devs[32]
+    cdef int res = xtrx_discovery(devs, 32)
     if res:
         return True
     else:
