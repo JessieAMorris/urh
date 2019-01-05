@@ -24,7 +24,7 @@ cpdef set_channel(size_t channel):
 cpdef size_t get_channel():
     return CHANNEL
 
-cpdef list get_device_list():
+cpdef bool get_device_list():
     """
     Obtain a list of XTRX devices attached to the system
     """
