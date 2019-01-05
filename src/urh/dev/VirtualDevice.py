@@ -125,6 +125,11 @@ class VirtualDevice(QObject):
                     self.__dev = SDRPlay(center_freq=freq, sample_rate=sample_rate, bandwidth=bandwidth,
                                          gain=gain, if_gain=if_gain,
                                          resume_on_full_receive_buffer=resume_on_full_receive_buffer)
+                elif name.startswith("xtrx"):
+                    from urh.dev.native.XTRX import XTRX
+                    self.__dev = XTRX(center_freq=freq, sample_rate=sample_rate, bandwidth=bandwidth,
+                                         gain=gain, if_gain=if_gain,
+                                         resume_on_full_receive_buffer=resume_on_full_receive_buffer)
                 elif name == "soundcard":
                     from urh.dev.native.SoundCard import SoundCard
                     self.__dev = SoundCard(sample_rate=sample_rate,

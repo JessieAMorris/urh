@@ -83,8 +83,8 @@ class BackendHandler(object):
     3) Manage the selection of devices backend
 
     """
-    DEVICE_NAMES = ("AirSpy R2", "AirSpy Mini", "BladeRF", "FUNcube", "HackRF",
-                    "LimeSDR", "PlutoSDR", "RTL-SDR", "RTL-TCP", "SDRPlay", "SoundCard", "USRP")
+    DEVICE_NAMES = ("AirSpy R2", "AirSpy Mini", "BladeRF", "FUNcube", "HackRF","LimeSDR",
+            "PlutoSDR", "RTL-SDR", "RTL-TCP", "SDRPlay", "SoundCard", "USRP", "XTRX")
 
     def __init__(self):
 
@@ -217,6 +217,14 @@ class BackendHandler(object):
         except ImportError:
             return False
 
+    @property
+    def __xtrx_native_enabled(self) -> bool:
+        try:
+            from urh.dev.native.lib import xtrx
+            return True
+        except ImportError:
+            return False
+
     def set_gnuradio_installed_status(self):
         if self.use_gnuradio_install_dir:
             # We are probably on windows with a bundled gnuradio installation
@@ -296,6 +304,10 @@ class BackendHandler(object):
 
         if devname.lower() == "sdrplay" and self.__sdrplay_native_enabled:
             supports_rx, supports_tx = True, False
+            backends.add(Backends.native)
+
+        if devname.lower() == "xtrx" and self.__xtrx_native_enabled:
+            supports_rx, supports_tx = True, True
             backends.add(Backends.native)
 
         if devname.lower() == "soundcard" and self.__soundcard_enabled:

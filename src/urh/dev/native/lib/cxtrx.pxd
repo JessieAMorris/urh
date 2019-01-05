@@ -1,4 +1,4 @@
-cdef extern from "libxtrx/xtrx_api.h":
+cdef extern from "xtrx_api.h":
 
     ctypedef unsigned int  uint32_t
     ctypedef unsigned long long uint64_t
