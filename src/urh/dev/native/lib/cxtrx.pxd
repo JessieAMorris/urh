@@ -1,5 +1,9 @@
 cdef extern from "libxtrx/xtrx_api.h":
-    struct xtrx_dev
+
+    ctypedef unsigned int  uint32_t
+    ctypedef unsigned long long uint64_t
+
+    ctypedef struct xtrx_dev
 
     enum xtrx_flags:
         XTRX_O_LOGLVL_MASK = 0x000f
@@ -26,7 +30,7 @@ cdef extern from "libxtrx/xtrx_api.h":
         XTRX_CLKSRC_EXT = 1
         XTRX_CLKSRC_EXT_W1PPS_SYNC = 2
 
-    ctypedef xtrx_clock_source structxtrx_clock_source_t
+    ctypedef xtrx_clock_source xtrx_clock_source_t
 
     int xtrx_set_ref_clk(xtrx_dev* dev, unsigned refclkhz, xtrx_clock_source_t clksrc)
 
@@ -153,7 +157,7 @@ cdef extern from "libxtrx/xtrx_api.h":
     ctypedef xtrx_run_stream_params xtrx_run_stream_params_t
 
     ctypedef struct xtrx_run_params:
-        xtr_x_direction_t dir
+        xtrx_direction_t         dir
         unsigned                 nflags
         xtrx_run_stream_params_t tx
         xtrx_run_stream_params_t rx
