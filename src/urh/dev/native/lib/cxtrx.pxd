@@ -15,11 +15,11 @@ cdef extern from "libxtrx/xtrx_api.h":
 
     ctypedef uint64_t master_ts
 
-    # int xtrx_open(const char* device, unsigned flags, struct xtrx_dev ** dev)
-    # int xtrx_open_multi(unsigned numdevs, const char** devices, unsigned flags, struct xtrx_dev** dev)
-    # int xtrx_open_list(const char* devices, const char* flags, struct xtrx_dev** dev)
+    int xtrx_open(const char* device, unsigned flags, struct xtrx_dev** dev)
+    int xtrx_open_multi(unsigned numdevs, const char** devices, unsigned flags, struct xtrx_dev** dev)
+    int xtrx_open_list(const char* devices, const char* flags, struct xtrx_dev** dev)
 
-    # void xtrx_close(struct xtrx_dev* dev)
+    void xtrx_close(struct xtrx_dev* dev)
 
     ctypedef enum xtrx_clock_source:
         XTRX_CLKSRC_INT = 0

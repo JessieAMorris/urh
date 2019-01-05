@@ -10,7 +10,7 @@ def main():
     cur_dir = os.path.realpath(__file__)
     os.chdir(os.path.realpath(os.path.join(cur_dir, "..", "..", "..", "..")))
     #call([sys.executable, "setup.py", "clean", "--all"])
-    call([sys.executable, "setup.py", "build_ext", "--inplace"])
+    call([sys.executable, "setup.py", "build_ext", "--inplace", "--without-airspy", "--without-bladerf", "--without-hackrf", "--without-limesdr", "--without-plutosdr", "--without-rtlsdr", "--without-sdrplay", "--without-usrp"])
 
 
 if __name__ == "__main__":
