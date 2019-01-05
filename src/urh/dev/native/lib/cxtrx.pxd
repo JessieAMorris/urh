@@ -15,11 +15,11 @@ cdef extern from "libxtrx/xtrx_api.h":
 
     ctypedef uint64_t master_ts
 
-    int xtrx_open(const char* device, unsigned flags, struct xtrx_dev** dev)
-    int xtrx_open_multi(unsigned numdevs, const char** devices, unsigned flags, struct xtrx_dev** dev)
-    int xtrx_open_list(const char* devices, const char* flags, struct xtrx_dev** dev)
+    int xtrx_open(const char* device, unsigned flags, xtrx_dev** dev)
+    int xtrx_open_multi(unsigned numdevs, const char** devices, unsigned flags, xtrx_dev** dev)
+    int xtrx_open_list(const char* devices, const char* flags, xtrx_dev** dev)
 
-    void xtrx_close(struct xtrx_dev* dev)
+    void xtrx_close(xtrx_dev* dev)
 
     ctypedef enum xtrx_clock_source:
         XTRX_CLKSRC_INT = 0
@@ -28,7 +28,7 @@ cdef extern from "libxtrx/xtrx_api.h":
 
     ctypedef xtrx_clock_source structxtrx_clock_source_t
 
-    int xtrx_set_ref_clk(struct xtrx_dev* dev, unsigned refclkhz, xtrx_clock_source_t clksrc)
+    int xtrx_set_ref_clk(xtrx_dev* dev, unsigned refclkhz, xtrx_clock_source_t clksrc)
 
     ctypedef struct xtrx_device_info:
         char uniqname[64]
@@ -56,7 +56,7 @@ cdef extern from "libxtrx/xtrx_api.h":
         XTRX_SAMPLERATE_AUTO_DECIM = (1U << 31)
     ctypedef xtrx_samplerate_flags xtrx_samplerate_flags_t
 
-    int xtrx_set_samplerate(struct xtrx_dev* dev, double cgen_rate, double rxrate,
+    int xtrx_set_samplerate(xtrx_dev* dev, double cgen_rate, double rxrate,
                                  double txrate, unsigned flags, double* actualcgen, double* actualrx, double* actualtx)
 
     ctypedef enum xtrx_channel:
@@ -74,10 +74,10 @@ cdef extern from "libxtrx/xtrx_api.h":
         XTRX_TUNE_BB_TX
     ctypedef  xtrx_tune xtrx_tune_t
 
-    int xtrx_tune(struct xtrx_dev* dev, xtrx_tune_t type, double freq, double *actualfreq)
-    int xtrx_tune_ex(struct xtrx_dev* dev, xtrx_tune_t type, xtrx_channel_t ch, double freq, double *actualfreq)
-    int xtrx_tune_tx_bandwidth(struct xtrx_dev* dev, xtrx_channel_t ch, double bw, double *actualbw)
-    int xtrx_tune_rx_bandwidth(struct xtrx_dev* dev, xtrx_channel_t ch, double bw, double *actualbw)
+    int xtrx_tune(xtrx_dev* dev, xtrx_tune_t type, double freq, double *actualfreq)
+    int xtrx_tune_ex(xtrx_dev* dev, xtrx_tune_t type, xtrx_channel_t ch, double freq, double *actualfreq)
+    int xtrx_tune_tx_bandwidth(xtrx_dev* dev, xtrx_channel_t ch, double bw, double *actualbw)
+    int xtrx_tune_rx_bandwidth(xtrx_dev* dev, xtrx_channel_t ch, double bw, double *actualbw)
 
     ctypedef enum xtrx_gain_type:
         XTRX_RX_LNA_GAIN
@@ -87,7 +87,7 @@ cdef extern from "libxtrx/xtrx_api.h":
         XTRX_RX_LB_GAIN
     ctypedef xtrx_gain_type xtrx_gain_type_t
 
-    int xtrx_set_gain(struct xtrx_dev* dev, xtrx_channel_t ch, xtrx_gain_type_t gt, double gain, double *actualgain)
+    int xtrx_set_gain(xtrx_dev* dev, xtrx_channel_t ch, xtrx_gain_type_t gt, double gain, double *actualgain)
 
     ctypedef enum xtrx_antenna:
         XTRX_RX_L
@@ -101,8 +101,8 @@ cdef extern from "libxtrx/xtrx_api.h":
         XTRX_TX_AUTO
     ctypedef xtrx_antenna xtrx_antenna_t
 
-    int xtrx_set_antenna(struct xtrx_dev* dev, xtrx_antenna_t antenna)
-    int xtrx_set_antenna_ex(struct xtrx_dev* dev, xtrx_channel_t ch, xtrx_antenna_t antenna)
+    int xtrx_set_antenna(xtrx_dev* dev, xtrx_antenna_t antenna)
+    int xtrx_set_antenna_ex(xtrx_dev* dev, xtrx_channel_t ch, xtrx_antenna_t antenna)
 
     ctypedef enum xtrx_wire_format:
         XTRX_WF_8  = 1
@@ -153,7 +153,7 @@ cdef extern from "libxtrx/xtrx_api.h":
     ctypedef xtrx_run_stream_params xtrx_run_stream_params_t
 
     ctypedef struct xtrx_run_params:
-        xtr x_direction_t         dir
+        xtr_x_direction_t dir
         unsigned                 nflags
         xtrx_run_stream_params_t tx
         xtrx_run_stream_params_t rx
@@ -176,7 +176,7 @@ cdef extern from "libxtrx/xtrx_api.h":
         XTRX_GTIME_GET_GPSPPS_DELTA
     ctypedef xtrx_gtime_cmd xtrx_gtime_cmd_t
 
-    int xtrx_gtime_op(struct xtrx_dev* dev, int devno, xtrx_gtime_cmd_t cmd, gtime_data_t in, gtime_data_t *out)
+    int xtrx_gtime_op(xtrx_dev* dev, int devno, xtrx_gtime_cmd_t cmd, gtime_data_t inn, gtime_data_t *out)
 
     enum xtrx_gpios:
         XTRX_GPIO_ALL = -1
@@ -218,13 +218,13 @@ cdef extern from "libxtrx/xtrx_api.h":
 
     ctypedef xtrx_gpio_func xtrx_gpio_func_t
 
-    int xtrx_gpio_configure(struct xtrx_dev* dev, int devno, int gpio_num, xtrx_gpio_func_t function)
-    int xtrx_gpio_out(struct xtrx_dev* dev, int devno, unsigned out)
-    int xtrx_gpio_clear_set(struct xtrx_dev* dev, int devno, unsigned clear_msk, unsigned set_msk)
-    int xtrx_gpio_in(struct xtrx_dev* dev, int devno, unsigned* in)
+    int xtrx_gpio_configure( xtrx_dev* dev, int devno, int gpio_num, xtrx_gpio_func_t function)
+    int xtrx_gpio_out( xtrx_dev* dev, int devno, unsigned out)
+    int xtrx_gpio_clear_set( xtrx_dev* dev, int devno, unsigned clear_msk, unsigned set_msk)
+    int xtrx_gpio_in( xtrx_dev* dev, int devno, unsigned* inn)
     void xtrx_run_params_init(xtrx_run_params_t* params)
-    int xtrx_run_ex(struct xtrx_dev* dev, const xtrx_run_params_t* params)
-    int xtrx_stop(struct xtrx_dev* dev, xtrx_direction_t dir)
+    int xtrx_run_ex( xtrx_dev* dev, const xtrx_run_params_t* params)
+    int xtrx_stop( xtrx_dev* dev, xtrx_direction_t dir)
 
     enum xtrx_send_ex_flags:
         XTRX_TX_DISCARDED_TO = 1
@@ -245,7 +245,7 @@ cdef extern from "libxtrx/xtrx_api.h":
         master_ts out_txlatets
     ctypedef xtrx_send_ex_info xtrx_send_ex_info_t
 
-    int xtrx_send_sync_ex(struct xtrx_dev* dev, xtrx_send_ex_info_t* info)
+    int xtrx_send_sync_ex( xtrx_dev* dev, xtrx_send_ex_info_t* info)
 
     enum:
         MAX_RECV_BUFFERS = 2
@@ -275,6 +275,6 @@ cdef extern from "libxtrx/xtrx_api.h":
         master_ts out_resumed_at
     ctypedef xtrx_recv_ex_info xtrx_recv_ex_info_t
 
-    int xtrx_recv_sync_ex(struct xtrx_dev* dev, xtrx_recv_ex_info_t* info)
+    int xtrx_recv_sync_ex( xtrx_dev* dev, xtrx_recv_ex_info_t* info)
 
 
