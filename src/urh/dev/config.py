@@ -126,8 +126,8 @@ DEVICE_CONFIG["SDRPlay"] = {
 
 DEVICE_CONFIG["XTRX"] = {
     "center_freq": dev_range(start=100 * K, stop=int(3.8 * G), step=1),
-    "sample_rate": dev_range(start=2 * M, stop=80 * M, step=1),
-    "bandwidth": dev_range(start=2 * M, stop=130 * M, step=1),
+    "sample_rate": dev_range(start=4 * M, stop=80 * M, step=1),
+    "bandwidth": dev_range(start=4 * M, stop=60 * M, step=1),
     "rx_rf_gain": list(range(0, 101)),  # Normalized Gain 0-100%
     "tx_rf_gain": list(range(0, 101)),  # Normalized Gain 0-100%
     "rx_channel": ["RX1", "RX2"],
@@ -135,7 +135,7 @@ DEVICE_CONFIG["XTRX"] = {
     "rx_antenna": ["None", "LNAH", "LNAL", "LNAW"],
     "rx_antenna_default_index": 2,
     "tx_antenna": ["None", "TXH", "TXW"],
-    "tx_antenna_default_index": 1
+    "tx_antenna_default_index": 2
 }
 
 DEVICE_CONFIG["SoundCard"] = {

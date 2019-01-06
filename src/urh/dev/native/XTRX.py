@@ -13,8 +13,8 @@ class XTRX(Device):
     ASYNCHRONOUS = False
     DEVICE_METHODS = Device.DEVICE_METHODS.copy()
     DEVICE_METHODS.update({
-        Device.Command.SET_FREQUENCY.name: "set_frequency",
-        Device.Command.SET_BANDWIDTH.name: "set_baseband_filter_bandwidth"
+        Device.Command.SET_FREQUENCY.name: "set_center_freq",
+        Device.Command.SET_RF_GAIN.name: "set_device_gain",
     })
 
     SYNC_RX_CHUNK_SIZE = 8192
@@ -37,53 +37,61 @@ class XTRX(Device):
         msg += ": "+str(ret)
         ctrl_connection.send(msg)
 
+        xtrx.set_sample_rate(4e6)
+
         return ret == 0
 
     @classmethod
-    def shutdown_device(cls, ctrl_conn: Connection, is_tx: bool):
-        if is_tx:
-            result = xtrx.stop_tx_mode()
-            ctrl_conn.send("STOP TX MODE:" + str(result))
-        else:
-            result = xtrx.stop_rx_mode()
-            ctrl_conn.send("STOP RX MODE:" + str(result))
+    def init_device(cls, ctrl_connection: Connection, is_tx: bool, parameters: OrderedDict):
+        ctrl_connection.send("Initializing device...")
+        xtrx.set_tx(is_tx)
+        return super().init_device(ctrl_connection, is_tx, parameters)
+
+    @classmethod
+    def shutdown_device(cls, ctrl_connection: Connection, is_tx: bool):
+        ctrl_connection.send("Stopping...")
+
+        result = xtrx.stop_stream()
+
+        ctrl_connection.send("Stopped: " + str(result))
+
+        ctrl_connection.send("Closing...")
 
         result = xtrx.close()
-        ctrl_conn.send("CLOSE:" + str(result))
+        ctrl_connection.send("CLOSE:" + str(result))
 
         return True
 
     @classmethod
     def prepare_sync_receive(cls, ctrl_connection: Connection):
-        #TODO
         ctrl_connection.send("Initializing stream...")
         xtrx.setup_stream()
-        return usrp.start_stream(cls.SYNC_RX_CHUNK_SIZE)
+        ctrl_connection.send("Stream setup")
+        ret = xtrx.start_stream(cls.SYNC_RX_CHUNK_SIZE)
+        ctrl_connection.send(f"Start stream: {ret}")
+        return ret
 
     @classmethod
-    def init_device(cls, ctrl_connection: Connection, is_tx: bool, parameters: OrderedDict):
-        xtrx.set_tx(is_tx)
-        return super().init_device(ctrl_connection, is_tx, parameters)
-
-    @classmethod
-    def prepare_sync_receive():
-        pass
-
-    @classmethod
-    def receive_sync():
-        pass
+    def receive_sync(cls, data_conn: Connection):
+        xtrx.recv_stream(data_conn, cls.SYNC_RX_CHUNK_SIZE)
 
     @classmethod
     def prepare_sync_send():
         pass
 
-
     @classmethod
     def send_sync():
         pass
 
-    def set_device_gain():
-        pass
+    @classmethod
+    def set_device_gain(cls, gain):
+        # TODO: convert to normalized gain
+        xtrx.set_device_gain(freq)
+
+    @classmethod
+    def set_center_freq(cls, freq):
+        # TODO: convert to normalized gain
+        xtrx.set_center_freq(freq)
 
     @property
     def has_multi_device_support(self):
@@ -91,8 +99,11 @@ class XTRX(Device):
 
     @staticmethod
     def unpack_complex(buffer):
-        pass
+        return np.frombuffer(buffer, dtype=np.complex64)
 
     @staticmethod
-    def pack_complex():
-        pass
+    def pack_complex(complex_samples: np.ndarray):
+        arr = Array("f", 2 * len(complex_samples), lock=False)
+        numpy_view = np.frombuffer(arr, dtype=np.float32)
+        numpy_view[:] = complex_samples.view(np.float32)
+        return arr

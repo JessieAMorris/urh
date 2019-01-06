@@ -84,6 +84,7 @@ class Device(object):
                 except (KeyError, AttributeError):
                     pass
 
+                ctrl_connection.send(f"Attempting {method_name} with value {value}")
                 ret = getattr(cls.DEVICE_LIB, method_name)(value)
                 ctrl_connection.send("{0} to {1}:{2}".format(tag, value, ret))
             except AttributeError as e:

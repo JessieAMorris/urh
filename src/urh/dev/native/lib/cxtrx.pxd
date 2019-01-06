@@ -3,6 +3,8 @@ cdef extern from "xtrx_api.h":
     ctypedef unsigned int  uint32_t
     ctypedef unsigned long long uint64_t
 
+    void xtrx_log_setlevel(int sevirity, const char sybsystem[4])
+
     ctypedef struct xtrx_dev
 
     enum xtrx_flags:
