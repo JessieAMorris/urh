@@ -70,13 +70,13 @@ cdef extern from "xtrx_api.h":
         XTRX_CH_ALL = ~0U
     ctypedef xtrx_channel xtrx_channel_t
 
-    ctypedef enum xtrx_tune:
+    ctypedef enum xtrx_tune_mode:
         XTRX_TUNE_RX_FDD
         XTRX_TUNE_TX_FDD
         XTRX_TUNE_TX_AND_RX_TDD
         XTRX_TUNE_BB_RX
         XTRX_TUNE_BB_TX
-    ctypedef  xtrx_tune xtrx_tune_t
+    ctypedef xtrx_tune_mode xtrx_tune_t
 
     int xtrx_tune(xtrx_dev* dev, xtrx_tune_t type, double freq, double *actualfreq)
     int xtrx_tune_ex(xtrx_dev* dev, xtrx_tune_t type, xtrx_channel_t ch, double freq, double *actualfreq)
