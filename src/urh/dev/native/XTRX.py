@@ -37,9 +37,19 @@ class XTRX(Device):
         msg += ": "+str(ret)
         ctrl_connection.send(msg)
 
-        xtrx.set_sample_rate(4e6)
-
         return ret == 0
+
+    @property
+    def device_parameters(self) -> OrderedDict:
+        return OrderedDict([
+            (self.Command.SET_SAMPLE_RATE.name, self.sample_rate),
+            (self.Command.SET_FREQUENCY.name, self.frequency),
+            (self.Command.SET_BANDWIDTH.name, self.bandwidth),
+            (self.Command.SET_RF_GAIN.name, self.gain),
+            (self.Command.SET_IF_GAIN.name, self.if_gain),
+            (self.Command.SET_BB_GAIN.name, self.baseband_gain),
+            ("identifier", self.device_serial)
+        ])
 
     @classmethod
     def init_device(cls, ctrl_connection: Connection, is_tx: bool, parameters: OrderedDict):
@@ -82,16 +92,6 @@ class XTRX(Device):
     @classmethod
     def send_sync():
         pass
-
-    @classmethod
-    def set_device_gain(cls, gain):
-        # TODO: convert to normalized gain
-        xtrx.set_device_gain(freq)
-
-    @classmethod
-    def set_center_freq(cls, freq):
-        # TODO: convert to normalized gain
-        xtrx.set_center_freq(freq)
 
     @property
     def has_multi_device_support(self):

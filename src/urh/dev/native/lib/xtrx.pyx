@@ -15,7 +15,7 @@ cdef double _actual_txsample_rate
 
 cdef cxtrx.xtrx_run_params_t _stream_params
 
-cdef cxtrx.xtrx_channel_t CHANNEL = cxtrx.xtrx_channel.XTRX_CH_A
+cdef cxtrx.xtrx_channel_t CHANNEL = cxtrx.xtrx_channel.XTRX_CH_AB
 cdef bool IS_TX = False
 
 cdef int MAX_PAKETS = 65536
@@ -95,8 +95,10 @@ cpdef int set_sample_rate(double sample_rate):
 
     if IS_TX:
         txsample_rate = sample_rate
+        cxtrx.xtrx_stop(_c_device, cxtrx.xtrx_direction.XTRX_TX);
     else:
         rxsample_rate = sample_rate
+        cxtrx.xtrx_stop(_c_device, cxtrx.xtrx_direction.XTRX_RX);
 
     ret = cxtrx.xtrx_set_samplerate(_c_device, 0, rxsample_rate, txsample_rate, 0,
             &master, &_actual_rxsample_rate, &_actual_txsample_rate);
@@ -111,13 +113,13 @@ cpdef int set_bandwidth(double bandwidth):
     else:
         return cxtrx.xtrx_tune_rx_bandwidth(_c_device, CHANNEL, bandwidth, &actual)
 
-cpdef int set_rf_gain(double normalized_gain):
+cpdef int set_device_gain(double gain):
     cdef double actual
 
     if IS_TX:
-        return cxtrx.xtrx_set_gain(_c_device, CHANNEL, cxtrx.xtrx_gain_type.XTRX_TX_PAD_GAIN, normalized_gain, &actual)
+        return cxtrx.xtrx_set_gain(_c_device, CHANNEL, cxtrx.xtrx_gain_type.XTRX_TX_PAD_GAIN, gain, &actual)
     else:
-        return cxtrx.xtrx_set_gain(_c_device, CHANNEL, cxtrx.xtrx_gain_type.XTRX_RX_LNA_GAIN, normalized_gain, &actual)
+        return cxtrx.xtrx_set_gain(_c_device, CHANNEL, cxtrx.xtrx_gain_type.XTRX_RX_LNA_GAIN, gain, &actual)
 
 cpdef int setup_stream():
     cdef cxtrx.xtrx_run_stream_params_t *params
@@ -135,21 +137,19 @@ cpdef int setup_stream():
     params.hfmt = cxtrx.xtrx_host_format.XTRX_IQ_FLOAT32
     params.chs = CHANNEL
     params.paketsize = 0
-    params.flags = 0
 
 cpdef int start_stream(int num_samples):
     _stream_params.nflags = 0
+    _stream_params.rx_stream_start = 0
+    _stream_params.tx_repeat_buf = NULL
 
     if IS_TX:
         if _actual_txsample_rate < 1:
             raise Exception("TX Sample Rate not set")
-
-        _stream_params.tx_repeat_buf = NULL
     else:
         if _actual_rxsample_rate < 1:
             raise Exception("RX Sample Rate not set")
 
-        _stream_params.rx_stream_start = 4096
 
     return cxtrx.xtrx_run_ex(_c_device, &_stream_params)
 
@@ -166,11 +166,8 @@ cpdef int close():
     _c_device = NULL
 
 cpdef int recv_stream(connection, int num_samples):
-    cdef float* result = <float*>malloc(num_samples * 2 * sizeof(float))
-    if not result:
-        raise MemoryError()
+    cdef float* buff = <float *> malloc(num_samples * 2 * sizeof(float))
 
-    cdef float* buff = <float *>malloc(num_samples * 2 * sizeof(float))
     if not buff:
         raise MemoryError()
 
@@ -180,21 +177,16 @@ cpdef int recv_stream(connection, int num_samples):
     rex.samples = num_samples
     rex.buffer_count = 1
     rex.buffers = buffs
-    rex.flags = cxtrx.xtrx_recv_ex_info_flags.RCVEX_DONT_INSER_ZEROS
+    rex.flags = cxtrx.xtrx_recv_ex_info_flags.RCVEX_STOP_ON_OVERRUN | cxtrx.xtrx_recv_ex_info_flags.RCVEX_DROP_OLD_ON_OVERFLOW;
 
     cdef int current_index = 0
     cdef int i = 0
 
-    try:
-        while current_index < 2*num_samples:
-            res = cxtrx.xtrx_recv_sync_ex(_c_device, &rex)
-            if res == 0:
-                memcpy(&result[current_index], &buff[0], 2 * rex.out_samples * sizeof(float))
+    res = cxtrx.xtrx_recv_sync_ex(_c_device, &rex)
+    if res == 0:
+        connection.send_bytes(<float[:2*rex.out_samples]> buff)
+    else:
+        logger.warning("XTRX: Failed to receive stream")
 
-                current_index += (2 * rex.out_samples)
-
-        connection.send_bytes(<float[:2*num_samples]> result)
-    finally:
-        free(buff)
-        free(result)
+    free(buff)
 
